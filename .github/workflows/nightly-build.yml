@@ -1,0 +1,88 @@
+name: Nightly Build
+
+on:
+  schedule:
+    # Run every night at 2:00 AM UTC (cron syntax: minute hour day month day-of-week)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+permissions:
+  contents: read
+  checks: write
+  actions: read
+
+jobs:
+  nightly-test:
+    name: Nightly Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Clean build directory
+        run: ./gradlew clean
+
+      - name: Run all tests
+        run: ./gradlew allTests --info
+
+      - name: Build project
+        run: ./gradlew build
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Nightly Test Results
+          path: build/test-results/allTests/*.xml
+          reporter: java-junit
+          fail-on-error: false
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-test-reports
+          path: |
+            build/reports/tests/allTests/
+            build/test-results/allTests/
+          retention-days: 30
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: build-artifacts
+          path: build/libs/*.jar
+          retention-days: 7
+
+      - name: Generate build summary
+        if: always()
+        run: |
+          echo "## Nightly Build Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** master" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ $? -eq 0 ]; then
+            echo "✅ Nightly build completed successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Nightly build failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::warning::Nightly build failed. Please check the logs for details."
