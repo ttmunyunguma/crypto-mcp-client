@@ -3,10 +3,10 @@ package com.cuius.mcpclient.service;
 import com.cuius.mcpclient.model.ToolCallRequest;
 import com.cuius.mcpclient.model.ToolCallResponse;
 import com.cuius.mcpclient.model.ToolInfo;
+import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.spec.McpSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.mcp.client.McpClient;
-import org.springframework.ai.mcp.spec.McpSchema;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,9 +18,9 @@ public class McpToolService {
 
     private static final Logger logger = LoggerFactory.getLogger(McpToolService.class);
 
-    private final McpClient mcpClient;
+    private final McpSyncClient mcpClient;
 
-    public McpToolService(McpClient mcpClient) {
+    public McpToolService(McpSyncClient mcpClient) {
         this.mcpClient = mcpClient;
     }
 

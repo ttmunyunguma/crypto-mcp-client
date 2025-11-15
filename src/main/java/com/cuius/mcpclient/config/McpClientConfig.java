@@ -1,8 +1,9 @@
 package com.cuius.mcpclient.config;
 
-import org.springframework.ai.mcp.client.McpClient;
-import org.springframework.ai.mcp.client.stdio.ServerParameters;
-import org.springframework.ai.mcp.client.stdio.StdioServerMcpTransport;
+import io.modelcontextprotocol.client.McpClient;
+import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.client.transport.ServerParameters;
+import io.modelcontextprotocol.client.transport.StdioClientTransport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,14 +22,20 @@ public class McpClientConfig {
     @Value("${mcp.server.timeout:30}")
     private long timeoutSeconds;
 
-    @Bean
-    public McpClient mcpClient() {
+    @Bean(destroyMethod = "closeGracefully")
+    public McpSyncClient mcpClient() {
         ServerParameters serverParams = ServerParameters.builder(serverCommand)
                 .args(serverArgs)
                 .build();
 
-        StdioServerMcpTransport transport = new StdioServerMcpTransport(serverParams);
+        StdioClientTransport transport = new StdioClientTransport(serverParams);
 
-        return McpClient.sync(transport, Duration.ofSeconds(timeoutSeconds));
+        McpSyncClient client = McpClient.sync(transport)
+                .requestTimeout(Duration.ofSeconds(timeoutSeconds))
+                .build();
+
+        client.initialize();
+
+        return client;
     }
 }
