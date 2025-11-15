@@ -22,16 +22,16 @@ public class McpClientRunner implements ApplicationRunner {
     }
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
-        logger.info("=== MCP Client Demo ===");
+    public void run(ApplicationArguments args) {
+        logger.info("=== MCP Client Runner ===");
 
         try {
             // Initialize the MCP client
-            logger.info("Step 1: Initializing MCP client...");
+            logger.info("Initialize client...");
             mcpToolService.initialize();
 
             // List available tools
-            logger.info("Step 2: Fetching available tools...");
+            logger.info("Fetching available tools...");
             List<ToolInfo> tools = mcpToolService.listTools();
 
             logger.info("Available Tools:");
