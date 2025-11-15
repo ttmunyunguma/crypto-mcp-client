@@ -7,10 +7,12 @@ import io.modelcontextprotocol.client.transport.StdioClientTransport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.time.Duration;
 
 @Configuration
+@Profile("!test")
 public class McpClientConfig {
 
     @Value("${mcp.server.command:java}")

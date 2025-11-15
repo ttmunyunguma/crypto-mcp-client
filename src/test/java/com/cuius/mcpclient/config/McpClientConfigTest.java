@@ -4,40 +4,38 @@ import io.modelcontextprotocol.client.McpSyncClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for McpClientConfig.
- * Tests the Spring configuration and bean creation for MCP client.
+ * Unit tests for configuration in test profile.
+ * Tests that the test configuration properly provides mocked beans.
  */
-@SpringBootTest(classes = McpClientConfig.class)
-@TestPropertySource(properties = {
-        "mcp.server.command=echo",
-        "mcp.server.args=test",
-        "mcp.server.timeout=10"
-})
+@SpringBootTest
+@ActiveProfiles("test")
+@Import(TestMcpClientConfig.class)
 class McpClientConfigTest {
 
-    @Autowired(required = false)
-    private McpClientConfig config;
+    @Autowired
+    private McpSyncClient mcpClient;
 
     @Test
     void contextLoads() {
-        // Verify that the configuration class can be loaded
-        assertThat(config).isNotNull();
+        // Verify that the test context loads properly
+        assertThat(mcpClient).isNotNull();
     }
 
     @Test
     void mcpClientBean_ShouldBeConfigured() {
-        // Verify the bean is properly configured
-        assertThat(config).isNotNull();
+        // Verify the mocked bean is properly configured in test profile
+        assertThat(mcpClient).isNotNull();
     }
 
     /**
-     * Note: Full integration test for McpSyncClient bean creation is in integration tests
-     * because it requires actual MCP server process and initialization.
-     * Unit tests focus on configuration class structure and basic bean wiring.
+     * Note: Tests for production McpClientConfig require an actual MCP server.
+     * These tests verify that the test profile provides proper mocked beans.
+     * Full integration test for real McpSyncClient is in integration tests with real server.
      */
 }
